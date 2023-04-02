@@ -12,7 +12,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     const stream = await OpenAIStream(prompt, process.env.OPENAI_API_KEY!);
 
-    return new Response(stream);
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/stream",
+      },
+    });
   } catch (error) {
     console.error(error);
     return new Response("Error", { status: 500 });
