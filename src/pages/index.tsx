@@ -1,29 +1,30 @@
 import Head from "next/head";
 import { Inter } from "next/font/google";
-import { useState } from "react";
-import endent from 'endent';
+import { FormEvent, useState } from "react";
+import endent from "endent";
 import { Answer } from "@/components/Answer";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  const [query, setQuery] = useState('');
-  const [answer, setAnswer] = useState('');
+  const [query, setQuery] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [domain, setDomain] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setAnswer('');
+    setAnswer("");
 
-    const searchRes = await fetch('/api/search', {
+    const searchRes = await fetch("/api/search", {
       method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         query,
-        matches: 3
-      })
+        matches: 3,
+      }),
     });
 
     if (!searchRes.ok) {
@@ -41,9 +42,9 @@ export default function Home() {
     const answerResponse = await fetch("/api/answer", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ prompt }),
     });
 
     if (!answerResponse.ok) {
@@ -65,10 +66,26 @@ export default function Home() {
       const { value, done: doneReading } = await reader.read();
       done = doneReading;
       const chunkValue = decoder.decode(value);
-      setAnswer(prev => prev + chunkValue);
+      setAnswer((prev) => prev + chunkValue);
     }
+  };
 
+  const handleDomainSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    // Prevent the browser from reloading the page
+    e.preventDefault();
 
+    const res = await fetch("/api/domain", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        domain
+      }),
+    });
+
+    const json = await res.json();
+    console.log(json);
   };
 
   return (
@@ -100,6 +117,16 @@ export default function Home() {
             >
               Submit
             </button>
+          </form>
+          <form onSubmit={handleDomainSubmit}>
+            <input
+              name="domain"
+              type="url"
+              value={domain}
+              onChange={({ target }) => setDomain(target.value)}
+              placeholder="Enter your domain name"
+            />
+            <button type="submit">Submit</button>
           </form>
 
           <div className="mt-4">
